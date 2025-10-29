@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Cadet GPTC Score Calculator</title>
+    <!-- Tailwind CSS CDN for modern and responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7fafc;
+        }
+        .section-card {
+            background-color: #ffffff;
+            border-left: 4px solid #3b82f6; /* Blue border for a clean look */
+            transition: all 0.3s ease;
+        }
+        .section-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+        .radio-label {
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        input[type="radio"]:checked + .radio-label {
+            background-color: #dbeafe; /* Light blue background when checked */
+            border-color: #2563eb;
+            font-weight: 600;
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 sm:p-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <header class="text-center mb-10 bg-white p-6 rounded-xl shadow-lg">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2">GPTC Score Predictor</h1>
+            <p class="text-lg text-gray-600">Glider Pilot Training Course (GPTC) File Review</p>
+            <p class="text-sm text-gray-500 mt-2">Based on the DND Scoring Factors - <a style="color: blue" href="https://www.canada.ca/en/department-national-defence/services/cadets-junior-canadian-rangers/cjcr-policy/cjcrgporders/8000/8060-7/8060-7e.html">File Review (CJCR Gp O 8060-7 Annex E)</a></p>
+        </header>
+
+        <!-- Form -->
+        <form id="gptc-form" class="space-y-8">
+
+            <!-- Scoring Factor Data - Hidden Script for JS -->
+            <script id="scoring-data" type="application/json">
+                {
+                    "maxScore": 110,
+                    "factors": [
+                        { "id": "attendance", "title": "1. Attendance Mandatory Local Activities", "max": 20, "options": [
+                            {"label": "90% - 100%", "score": 20},
+                            {"label": "80% - 89%", "score": 17},
+                            {"label": "70% - 79%", "score": 14},
+                            {"label": "60% - 69%", "score": 10},
+                            {"label": "50% - 59%", "score": 5},
+                            {"label": "< 50%", "score": 0}
+                        ]},
+                        { "id": "rank", "title": "2. Current Rank", "max": 5, "options": [
+                            {"label": "WO1", "score": 2},
+                            {"label": "WO2", "score": 3},
+                            {"label": "FSgt", "score": 4},
+                            {"label": "FCpl / Sgt", "score": 5},                            
+                            {"label": "LAC / Cpl", "score": 1}
+                        ]},
+                        { "id": "rda", "title": "3. Regionally Directed Activity (RDA) Participation", "max": 10, "options": [
+                            {"label": "5 or more occurrences", "score": 10},
+                            {"label": "4 occurrences", "score": 8},
+                            {"label": "3 occurrences", "score": 6},
+                            {"label": "2 occurrences", "score": 4},
+                            {"label": "1 occurrence", "score": 2},
+                            {"label": "0 occurrences", "score": 0}
+                        ]},
+                        { "id": "nda", "title": "4. Nationally Directed Activity (NDA) Participation", "max": 10, "options": [
+                            {"label": "3 or more occurrences", "score": 10},
+                            {"label": "2 occurrences", "score": 7},
+                            {"label": "1 occurrence", "score": 3},
+                            {"label": "0 occurrences", "score": 0}
+                        ]},
+                        { "id": "ctc_qual", "title": "5. Summer Camp Qualifications (Total Occurrences)", "max": 10, "options": [
+                            {"label": "5 or more occurrences", "score": 10},
+                            {"label": "4 occurrences", "score": 8},
+                            {"label": "3 occurrences", "score": 6},
+                            {"label": "2 occurrences", "score": 4},
+                            {"label": "1 occurrence", "score": 2},
+                            {"label": "0 occurrences", "score": 0}
+                        ]},
+                        { "id": "years", "title": "6. Total Number of Years in Cadet Program", "max": 10, "options": [
+                            {"label": "5+ years", "score": 10},
+                            {"label": "4 years", "score": 8},
+                            {"label": "3 years", "score": 6},
+                            {"label": "2 years", "score": 4},
+                            {"label": "1 year", "score": 2},
+                            {"label": "Less than 1 year", "score": 0}
+                        ]},
+                        { "id": "age", "title": "7. Age (as of 31 Dec of current training year)", "max": 5, "options": [
+                            {"label": "16 years old", "score": 5},
+                            {"label": "17 years old", "score": 3},
+                            {"label": "15 years old", "score": 3},
+                            {"label": "18 years old", "score": 1},
+                            {"label": "Other (e.g., 14 or 19+)", "score": 0}
+                        ]},
+                        { "id": "fitness", "title": "8. Cadet Fitness Assessment", "max": 5, "options": [
+                            {"label": "Excellence", "score": 5},
+                            {"label": "Gold", "score": 4},
+                            {"label": "Silver", "score": 3},
+                            {"label": "Bronze", "score": 2},
+                            {"label": "Participate", "score": 1},
+                            {"label": "No recent assessment", "score": 0}
+                        ]},
+                        { "id": "staff_cadet", "title": "9. Summer Camp Staff Cadet (Highest Rank Held)", "max": 10, "options": [
+                            {"label": "WO1 (Staff Cadet)", "score": 10},
+                            {"label": "WO2 (Staff Cadet)", "score": 7},
+                            {"label": "FSgt (Staff Cadet)", "score": 5},
+                            {"label": "Sgt (Staff Cadet)", "score": 3},
+                            {"label": "Never a Staff Cadet", "score": 0}
+                        ]},
+                        { "id": "co_priority", "title": "10. Squadron CO Priority Ranking", "max": 10, "options": [
+                            {"label": "Priority #1", "score": 10},
+                            {"label": "Priority #2", "score": 5}
+                        ]},
+                        { "id": "edu_curriculum", "title": "11. Education - Curriculum (Math, Science = 2 pts; English/French, PhysEd, Business = 1 pt)", "max": 6, "options": [
+                            {"label": "12+", "score": 6},
+                            {"label": "11", "score": 4},
+                            {"label": "10", "score": 3},
+                            {"label": "9", "score": 2},
+                            {"label": "8", "score": 1}
+                        ]},
+                        { "id": "edu_average", "title": "12. Education - Overall Average", "max": 5, "options": [
+                            {"label": "95-100% (A+ Excellent)", "score": 5},
+                            {"label": "86-94% (A Very Good)", "score": 4},
+                            {"label": "73-85% (B Good)", "score": 3},
+                            {"label": "67-72% (C+ Satisfactory)", "score": 2},
+                            {"label": "60-66% (C Pass)", "score": 1},
+                            {"label": "Below 60% or not provided/assessed", "score": 0}
+                        ]},
+                        { "id": "edu_grade", "title": "13. Education - Grade Enrollment", "max": 3, "options": [
+                            {"label": "Grade 9/S3", "score": 4},
+                            {"label": "Grade 10/S4", "score": 3},
+                            {"label": "Grade 11/S5", "score": 2},
+                            {"label": "Grade 12/CEGEP", "score": 1}
+                        ]}
+                    ]
+                }
+            </script>
+
+            <!-- Loop will be dynamically generated by JS, this is the submit button -->
+            <button type="submit" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xl rounded-xl shadow-lg transition duration-200 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50">
+                Calculate GPTC Score
+            </button>
+        </form>
+
+        <!-- Results Display -->
+        <div id="results" class="hidden mt-12 p-8 bg-green-50 border-2 border-green-300 rounded-xl shadow-2xl text-center">
+            <h2 class="text-3xl font-extrabold text-green-800 mb-4">Your Calculated GPTC Score</h2>
+            <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-8">
+                <div>
+                    <p class="text-6xl font-bold text-green-600" id="total-score-display"></p>
+                    <p class="text-lg text-gray-700 mt-1">Total Points (Out of <span id="max-score-display"></span>)</p>
+                </div>
+                <div class="hidden sm:block text-5xl text-gray-400">|</div>
+                <div>
+                    <p class="text-6xl font-bold text-green-600" id="percentage-display"></p>
+                    <p class="text-lg text-gray-700 mt-1">Percentage of Maximum</p>
+                </div>
+            </div>
+            <button onclick="document.getElementById('results').classList.add('hidden'); document.getElementById('gptc-form').scrollIntoView();" class="mt-6 text-blue-600 hover:text-blue-800 font-semibold transition duration-150">
+                &larr; Re-evaluate Your Scores
+            </button>
+        </div>
+
+        <!-- Error/Incomplete Warning -->
+        <div id="error-message" class="hidden mt-8 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-center font-medium">
+            Please answer all 14 questions before calculating your score.
+        </div>
+
+    </div>
+
+    <script>
+        // Load data from the hidden script tag
+        const scoringData = JSON.parse(document.getElementById('scoring-data').textContent);
+        const form = document.getElementById('gptc-form');
+        const resultsDiv = document.getElementById('results');
+        const errorMessage = document.getElementById('error-message');
+        const maxTotalScore = scoringData.maxScore;
+
+        /**
+         * Dynamically generates the form sections based on the JSON data.
+         */
+        function generateForm() {
+            const formContainer = document.getElementById('gptc-form');
+            
+            scoringData.factors.forEach(factor => {
+                const sectionHtml = `
+                    <div class="section-card p-6 rounded-xl shadow-md border-t-4 border-l-4 border-blue-500">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                            ${factor.title}
+                            <span class="text-sm font-normal text-blue-500 ml-2">(Max ${factor.max} pts)</span>
+                        </h3>
+                        <div class="space-y-2" data-factor-id="${factor.id}">
+                            ${factor.options.map((option, index) => `
+                                <div class="flex items-center">
+                                    <input 
+                                        type="radio" 
+                                        id="${factor.id}-${index}" 
+                                        name="${factor.id}" 
+                                        value="${option.score}" 
+                                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                        required
+                                    >
+                                    <label for="${factor.id}-${index}" class="radio-label ml-3 p-2 block w-full border border-gray-200 rounded-md text-gray-700 hover:bg-gray-50 transition duration-150">
+                                        ${option.label}
+                                        <span class="float-right text-sm font-mono text-blue-700">${option.score} pts</span>
+                                    </label>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                // Insert the HTML before the submit button
+                formContainer.querySelector('button[type="submit"]').insertAdjacentHTML('beforebegin', sectionHtml);
+            });
+            document.getElementById('max-score-display').textContent = maxTotalScore;
+        }
+
+        /**
+         * Calculates the total score and displays the results.
+         * @param {Event} event - The form submission event.
+         */
+        function calculateScore(event) {
+            event.preventDefault();
+            errorMessage.classList.add('hidden');
+            let totalScore = 0;
+            let answeredQuestions = 0;
+            const totalQuestions = scoringData.factors.length;
+
+            scoringData.factors.forEach(factor => {
+                const selected = form.querySelector(`input[name="${factor.id}"]:checked`);
+                if (selected) {
+                    totalScore += parseInt(selected.value);
+                    answeredQuestions++;
+                }
+            });
+
+            if (answeredQuestions < totalQuestions) {
+                // Not all questions answered
+                errorMessage.classList.remove('hidden');
+                resultsDiv.classList.add('hidden');
+                return;
+            }
+
+            const percentage = (totalScore / maxTotalScore) * 100;
+
+            document.getElementById('total-score-display').textContent = totalScore;
+            document.getElementById('percentage-display').textContent = percentage.toFixed(1) + '%';
+
+            resultsDiv.classList.remove('hidden');
+            resultsDiv.scrollIntoView({ behavior: 'smooth' }); // Scroll to results
+        }
+
+        // Initialize the form
+        document.addEventListener('DOMContentLoaded', () => {
+            generateForm();
+            form.addEventListener('submit', calculateScore);
+        });
+    </script>
+</body>
+</html>
